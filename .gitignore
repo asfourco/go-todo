@@ -36,3 +36,8 @@
 .history
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,go
+
+##### Other ######
+
+## database
+*.db

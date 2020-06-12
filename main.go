@@ -3,49 +3,17 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"go-todo/models"
 	"net/http"
 )
 
-// ToDoStatus type
-type ToDoStatus int
-
-// TodoStatus enum definitions
-const (
-	Open ToDoStatus = iota + 1
-	InProgress
-	Closed
-)
-
-// Return ToDoStatus string
-func (s ToDoStatus) String() string {
-	switch s {
-	case 1:
-		return "Open"
-	case 2:
-		return "In Progress"
-	case 3:
-		return "Closed"
-	default:
-		return "Unknown"
-	}
-}
-
-// ToDo struct
-type ToDo struct {
-	ID          string
-	Title       string
-	Description string
-	createdAt   int
-	updatedAt   int
-	state       ToDoStatus
-}
-
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		results := []ToDo{
-			ToDo{"abc123", "first todo", "this is the first item", 1591559402263, 1591559402263, Open},
-			ToDo{"def456", "second todo", "this is the second item", 1591559412263, 1591559412263, Open},
-			ToDo{"ghi789", "third todo", "this is the third item", 1591559422263, 1591559422263, Open},
+		testTags := []models.Tag{models.Tag{ID: 1, Name: "foo", CreatedAt: "2020-06-12T14:05:26Z"}, models.Tag{ID: 2, Name: "bar", CreatedAt: "2020-06-12T14:05:26Z"}}
+		results := []models.ToDo{
+			models.ToDo{ID: 123, Title: "first todo", Description: "this is the first item", CreatedAt: "2020-06-12T14:05:26Z", UpdatedAt: "2020-06-12T14:05:26Z", Status: models.Open, Tags: []models.Tag{}},
+			models.ToDo{ID: 456, Title: "second todo", Description: "this is the second item", CreatedAt: "2020-06-12T14:05:26Z", UpdatedAt: "2020-06-12T14:05:26Z", Status: models.Closed, Tags: testTags},
+			models.ToDo{ID: 789, Title: "third todo", Description: "this is the third item", CreatedAt: "2020-06-12T14:05:26Z", UpdatedAt: "2020-06-12T14:05:26Z", Status: models.InProgress, Tags: []models.Tag{}},
 		}
 		encoder := json.NewEncoder(w)
 		if err := encoder.Encode(results); err != nil {
@@ -54,10 +22,8 @@ func main() {
 	})
 
 	http.HandleFunc("/open", func(w http.ResponseWriter, r *http.Request) {
-		results := []ToDo{
-			ToDo{"abc123", "first todo", "this is the first item", 1591559402263, 1591559402263, Open},
-			ToDo{"def456", "second todo", "this is the second item", 1591559412263, 1591559412263, Open},
-			ToDo{"ghi789", "third todo", "this is the third item", 1591559422263, 1591559422263, Open},
+		results := []models.ToDo{
+			models.ToDo{ID: 123, Title: "first todo", Description: "this is the first item", CreatedAt: "2020-06-12T14:05:26Z", UpdatedAt: "2020-06-12T14:05:26Z", Status: models.Open, Tags: []models.Tag{}},
 		}
 		encoder := json.NewEncoder(w)
 		if err := encoder.Encode(results); err != nil {
@@ -66,8 +32,8 @@ func main() {
 	})
 
 	http.HandleFunc("/in_progress", func(w http.ResponseWriter, r *http.Request) {
-		results := []ToDo{
-			ToDo{"abc123", "first todo", "this is the first item", 1591559402263, 1591559402263, InProgress},
+		results := []models.ToDo{
+			models.ToDo{ID: 123, Title: "first todo", Description: "this is the first item", CreatedAt: "2020-06-12T14:05:26Z", UpdatedAt: "2020-06-12T14:05:26Z", Status: models.InProgress, Tags: []models.Tag{models.Tag{ID: 1, Name: "foo", CreatedAt: "2020-06-12T14:05:26Z"}, models.Tag{ID: 2, Name: "bar", CreatedAt: "2020-06-12T14:05:26Z"}}},
 		}
 		encoder := json.NewEncoder(w)
 		if err := encoder.Encode(results); err != nil {
@@ -76,8 +42,8 @@ func main() {
 	})
 
 	http.HandleFunc("/closed", func(w http.ResponseWriter, r *http.Request) {
-		results := []ToDo{
-			ToDo{"abc123", "first todo", "this is the first item", 1591559402263, 1591559402263, Closed},
+		results := []models.ToDo{
+			models.ToDo{ID: 123, Title: "first todo", Description: "this is the first item", CreatedAt: "2020-06-12T14:05:26Z", UpdatedAt: "2020-06-12T14:05:26Z", Status: models.Closed, Tags: []models.Tag{models.Tag{ID: 1, Name: "foo", CreatedAt: "2020-06-12T14:05:26Z"}, models.Tag{ID: 2, Name: "bar", CreatedAt: "2020-06-12T14:05:26Z"}}},
 		}
 		encoder := json.NewEncoder(w)
 		if err := encoder.Encode(results); err != nil {
