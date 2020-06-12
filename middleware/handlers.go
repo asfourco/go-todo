@@ -53,9 +53,7 @@ func CreateTodo(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("Error in inserting todo %v\n", err)
 	}
 
-	res := response{ID: newTodo.ID, Message: "ToDo created succussfully"}
-
-	err = json.NewEncoder(w).Encode(res)
+	err = json.NewEncoder(w).Encode(newTodo)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -64,7 +62,7 @@ func CreateTodo(w http.ResponseWriter, r *http.Request) {
 
 // GetTodo get a todo
 func GetTodo(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Context-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	// get the todo id from the request params, key is "id"
 	params := mux.Vars(r)
@@ -87,7 +85,7 @@ func GetTodo(w http.ResponseWriter, r *http.Request) {
 
 // GetAllTodos get all todos
 func GetAllTodos(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Context-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	// get all the users in the db
 	todos, err := getAllTodos()
@@ -125,19 +123,11 @@ func UpdateTodo(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("Unable to decode the request body.  %v", err)
 	}
 
-	updatedRows, err := updateTodo(int64(id), todo)
+	newTodo, err := updateTodo(int64(id), todo)
 	checkErr(err)
-	// format the message string
-	msg := fmt.Sprintf("Todo updated successfully. Total rows/record affected %v", updatedRows)
-
-	// format the response message
-	res := response{
-		ID:      int64(id),
-		Message: msg,
-	}
 
 	// send the response
-	err = json.NewEncoder(w).Encode(res)
+	err = json.NewEncoder(w).Encode(newTodo)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -197,9 +187,8 @@ func AddTag(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatalf("Error in inserting new tag. %v\n", err)
 	}
-	res := response{ID: newEntry.ID, Message: "Tag created succussfully"}
 
-	err = json.NewEncoder(w).Encode(res)
+	err = json.NewEncoder(w).Encode(newEntry)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -238,9 +227,31 @@ func DeleteTag(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetTag will get a tag
+func GetTag(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Context-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	// get the todo id from the request params, key is "id"
+	params := mux.Vars(r)
+	// the id type from string to int
+	id, err := strconv.Atoi(params["id"])
+	checkErr(err)
+
+	tag, err := getTag(int64(id))
+	if err != nil {
+		log.Fatalf("Error in retrieving tag. %v\n", err)
+	}
+
+	err = json.NewEncoder(w).Encode(tag)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+}
+
 // GetAllTags list all tags
 func GetAllTags(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Context-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	// get all the users in the db
 	tags, err := getAllTags()
@@ -251,6 +262,37 @@ func GetAllTags(w http.ResponseWriter, r *http.Request) {
 
 	// send all the users as response
 	err = json.NewEncoder(w).Encode(tags)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+}
+
+// AssociateTag will associate a tag with a todo
+func AssociateTag(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Context-Type", "application/x-www-form-urlencoded")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	// get the todo id from the request params, key is "id"
+	params := mux.Vars(r)
+	// the id type from string to int
+	tagID, err := strconv.Atoi(params["tagID"])
+	checkErr(err)
+	todoID, err := strconv.Atoi(params["todoID"])
+	checkErr(err)
+
+	associationID, err := associateTag(int64(tagID), int64(todoID))
+	checkErr(err)
+	msg := fmt.Sprintf("Tag associated successfully. todos_tags ID: %v", associationID)
+
+	// format the reponse message
+	res := response{
+		ID:      int64(associationID),
+		Message: msg,
+	}
+
+	// send the response
+	err = json.NewEncoder(w).Encode(res)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
